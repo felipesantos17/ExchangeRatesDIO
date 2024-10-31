@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct Fluctuation: Identifiable {
+struct Fluctuation: Identifiable, Equatable {
     let id = UUID()
     let symbol: String
     let change: Double

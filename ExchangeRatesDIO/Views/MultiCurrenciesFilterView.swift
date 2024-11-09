@@ -1,19 +1,13 @@
 //
-//  BaseCurrencyFilterView.swift
+//  MultiCurrenciesFilterView.swift
 //  ExchangeRatesDIO
 //
-//  Created by Felipe Santos on 04/11/24.
+//  Created by Felipe Santos on 05/11/24.
 //
 
 import SwiftUI
 
-struct Symbol: Identifiable, Equatable {
-    let id = UUID()
-    var symbol: String
-    var fullName: String
-}
-
-class BaseCurrencyFilterViewModel: ObservableObject {
+class MultiCurrenciesFilterViewModel: ObservableObject {
     @Published var symbols: [Symbol] = [
         Symbol(symbol: "BRL", fullName: "Brazilian Real"),
         Symbol(symbol: "EUR", fullName: "Euro"),
@@ -23,14 +17,14 @@ class BaseCurrencyFilterViewModel: ObservableObject {
     ]
 }
 
-struct BaseCurrencyFilterView: View {
+struct MultiCurrenciesFilterView: View {
     
     @Environment(\.dismiss) var dismiss
     
-    @StateObject var viewModel = BaseCurrencyFilterViewModel()
+    @StateObject var viewModel = MultiCurrenciesFilterViewModel()
     
     @State private var searchText = ""
-    @State private var selection: String?
+    @State private var selections: [String] = []
     
     var searchResults: [Symbol] {
         if searchText.isEmpty {
@@ -50,15 +44,31 @@ struct BaseCurrencyFilterView: View {
     }
     
     private var listCurenciesView: some View {
-        List(searchResults, id: \.symbol, selection: $selection) { item in
-            HStack {
-                Text(item.symbol)
-                    .font(.system(size: 14, weight: .bold))
-                Text("-")
-                    .font(.system(size: 14, weight: .semibold))
-                Text(item.fullName)
-                    .font(.system(size: 14, weight: .semibold))
+        List(searchResults, id: \.symbol) { item in
+            Button {
+                if selections.contains(item.symbol) {
+                    selections.removeAll { $0 == item.symbol }
+                } else {
+                    selections.append(item.symbol)
+                }
+            } label: {
+                HStack {
+                    HStack {
+                        Text(item.symbol)
+                            .font(.system(size: 14, weight: .bold))
+                        Text("-")
+                            .font(.system(size: 14, weight: .semibold))
+                        Text(item.fullName)
+                            .font(.system(size: 14, weight: .semibold))
+                        Spacer()
+                    }
+                    Image(systemName: "checkmark")
+                        .opacity(selections.contains(item.symbol) ? 1.0 : 0.0)
+                    Spacer()
+                }
             }
+            .foregroundStyle(.primary)
+            
         }
         .searchable(text: $searchText)
         .navigationTitle("Filtrar Moedas")
@@ -75,5 +85,5 @@ struct BaseCurrencyFilterView: View {
 }
 
 #Preview {
-    BaseCurrencyFilterView()
+    MultiCurrenciesFilterView()
 }

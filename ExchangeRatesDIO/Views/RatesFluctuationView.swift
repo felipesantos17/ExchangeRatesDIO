@@ -29,6 +29,7 @@ struct RatesFluctuationView: View {
     
     @State private var searchText: String = ""
     @State private var isPresentedBaseCurrencyFilter = false
+    @State private var isPresentedMultiCurrencyFilter = false
     
     var searchResult: [Fluctuation] {
         if searchText.isEmpty {
@@ -54,9 +55,12 @@ struct RatesFluctuationView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 Button {
-                    print("Filtar moedas")
+                    isPresentedMultiCurrencyFilter.toggle()
                 } label: {
                     Image(systemName: "slider.horizontal.3")
+                }
+                .fullScreenCover(isPresented: $isPresentedMultiCurrencyFilter) {
+                    MultiCurrenciesFilterView()
                 }
             }
         }

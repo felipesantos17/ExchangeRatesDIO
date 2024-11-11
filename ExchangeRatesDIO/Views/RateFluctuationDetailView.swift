@@ -8,62 +8,14 @@
 import SwiftUI
 import Charts
 
-struct ChartComparation: Identifiable, Equatable {
-    let id = UUID()
-    var symbol: String
-    var period: Date
-    var endRate: Double
-}
 
-class RateFluctuationDetailViewModel: ObservableObject {
-    @Published var fluctuations: [Fluctuation] = [
-        Fluctuation(symbol: "USD", change: 0.0008, changePct: 0.4175, endRate: 0.18857),
-        Fluctuation(symbol: "EUR", change: 0.0003, changePct: 0.1651, endRate: 0.181353),
-        Fluctuation(symbol: "GBP", change: -0.0001, changePct: -0.0403, endRate: 0.158915)
-    ]
-    @Published var chartComparations: [ChartComparation] = [
-        ChartComparation(symbol: "USD", period: "2020-11-13".toDate(), endRate: 0.18857),
-        ChartComparation(symbol: "USD", period: "2020-11-12".toDate(), endRate: 0.187657),
-        ChartComparation(symbol: "USD", period: "2020-11-11".toDate(), endRate: 0.189786),
-        ChartComparation(symbol: "USD", period: "2020-11-10".toDate(), endRate: 0.197073)
-    ]
-    
-    @Published var timeRange = TimeRangeEnum.today
-    
-    var hasRates: Bool {
-        return chartComparations.filter { $0.endRate > 0 }.count > 0
-    }
-    
-    var yAxisMin: Double {
-        let min = chartComparations.map { $0.endRate }.min() ?? 0.0
-        return (min - (min * 0.02))
-    }
-    
-    var yAxisMax: Double {
-        let max = chartComparations.map { $0.endRate }.max() ?? 0.0
-        return (max + (max * 0.02))
-    }
-    
-    func xAxisLabelFormatStyle(for date: Date) -> String {
-        switch timeRange {
-        case .today:
-            return date.formatter(dateFormat: "HH:mm")
-        case .thisWeek, .thisMonth:
-            return date.formatter(dateFormat: "dd, MMM")
-        case .thisSemester:
-            return date.formatter(dateFormat: "MMM")
-        case .thisYear:
-            return date.formatter(dateFormat: "MMM, YYYY")
-        }
-    }
-}
 
 struct RateFluctuationDetailView: View {
     
-    @StateObject var viewModel = RateFluctuationDetailViewModel()
+    @StateObject var viewModel = ViewModel()
     
     @State var baseCurrency: String
-    @State var rateFluctuation: Fluctuation
+    @State var rateFluctuation: RateFluctuationModel
     @State private var isPresentedBaseCurrencyFilter = false
     
     var body: some View {
@@ -150,7 +102,7 @@ struct RateFluctuationDetailView: View {
     }
     
     private var lineChartView: some View {
-        Chart(viewModel.chartComparations) { item in
+        Chart(viewModel.ratesHistorical) { item in
             LineMark(
                 x: .value("Period", item.period),
                 y: .value("Rates", item.endRate)
@@ -213,7 +165,7 @@ struct RateFluctuationDetailView: View {
     private var comparationScrollView: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             LazyHGrid(rows: [GridItem(.flexible())], alignment: .center) {
-                ForEach(viewModel.fluctuations) { fluctuation in
+                ForEach(viewModel.ratesFluctuation) { fluctuation in
                     Button {
                         print("Comparação")
                     } label: {
@@ -247,5 +199,5 @@ struct RateFluctuationDetailView: View {
 }
 
 #Preview {
-    RateFluctuationDetailView(baseCurrency: "BR", rateFluctuation: Fluctuation(symbol: "EUR", change: 0.0003, changePct: 0.1651, endRate: 0.181353))
+    RateFluctuationDetailView(baseCurrency: "BR", rateFluctuation: RateFluctuationModel(symbol: "EUR", change: 0.0003, changePct: 0.1651, endRate: 0.181353))
 }

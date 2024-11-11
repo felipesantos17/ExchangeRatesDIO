@@ -8,10 +8,10 @@
 import Foundation
 
 protocol RatesHistoricalDataProviderDelegate: DataProviderManagerDelegate {
-    func success(model: RatesHistoricalObject)
+    func success(model: [RateHistoricModel])
 }
 
-class RatesHistoricalDataProvider: DataProviderManager<RatesHistoricalDataProviderDelegate, RatesHistoricalObject> {
+class RatesHistoricalDataProvider: DataProviderManager<RatesHistoricalDataProviderDelegate, [RateHistoricModel]> {
     private let ratesStore: RatesStore
     
     init(ratesStore: RatesStore = RatesStore()) {
@@ -21,8 +21,10 @@ class RatesHistoricalDataProvider: DataProviderManager<RatesHistoricalDataProvid
     func fetchTimeseries(by base: String, from symbols: [String], startDate: String, endDate: String) {
         Task.init {
             do {
-                let model = try await ratesStore.fetchTimeseries(by: base, from: symbols, startDate: startDate, endDate: endDate)
-                delegate?.success(model: model)
+                let object = try await ratesStore.fetchTimeseries(by: base, from: symbols, startDate: startDate, endDate: endDate)
+                delegate?.success(model: object.flatMap({ (period, rates) -> [RateHistoricModel] in
+                    return rates.map { RateHistoricModel(symbol: $0, period: period.toDate(), endRate: $1) }
+                }))
             } catch {
                 delegate?.errorData(delegate, error: error)
             }

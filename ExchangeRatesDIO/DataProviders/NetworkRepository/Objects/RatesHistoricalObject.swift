@@ -7,5 +7,5 @@
 
 import Foundation
 
-typealias RatesHistoricalObject = [String: [String: String]]
+typealias RatesHistoricalObject = [String: [String: Double]]
 
